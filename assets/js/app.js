@@ -18,6 +18,74 @@ window.addEventListener('load', function () {
 });
 
 /**
+ * Creates new information about the video and pushes to the array;
+ */
+function addVideo() {
+  const thisVideo = document.getElementById("video-id");
+  const thisArtist = document.getElementById("artist");
+  const thisTitle = document.getElementById("title");
+  const thisDuration = document.getElementById("duration");
+
+  let theMetrics = true;
+  theMetrics = theMetrics && thisVideo.value != "" && thisVideo.value.length == 11;
+  theMetrics = theMetrics && thisArtist.value != "" && thisArtist.value.length > 2;
+  theMetrics = theMetrics && thisTitle.value != "" && thisTitle.value.length > 2;
+  theMetrics = theMetrics && thisDuration.value != "" && !isNaN(thisDuration.value);
+  if(theMetrics) {
+    database.videos.push({
+      videoId: thisVideo.value,
+      artist: thisArtist.value,
+      title: thisTitle.value,
+      duration: thisDuration.value
+    });
+    thisVideo.value = '';
+    thisArtist.value = '';
+    thisTitle.value = '';
+    thisDuration.value = '';
+    renderVideoList();
+  }
+}
+
+/**
+ * Sort videos by title name;
+ * Apply the div creation function for each video in the array;
+ */
+function renderVideoList() {
+  const thisPlaylist = document.getElementById("playlist");
+  thisPlaylist.innerHTML = "";
+
+  sortByTitle();
+
+  database.videos.forEach(videoElement => thisPlaylist.appendChild(createVideoElement(videoElement)));
+  totalAirtime();
+}
+
+/**
+ * Sorting videos by title;
+ */
+function sortByTitle() {
+  database.videos.sort((itemA, itemB) => {
+    if (itemA.title > itemB.title) {
+      return 1;
+    }
+    else if (itemB.title > itemA.title) {
+      return -1;
+    }
+    return 0;
+  });
+}
+
+/**
+ * Calculates total time of all videos duration;
+ */
+function totalAirtime() {
+  const newAirtime = document.getElementById("airtime");
+  newAirtime.innerHTML = toTimeForAirtime(database.videos.reduce((previousValue, currentValue) => {
+    return previousValue + currentValue.duration;
+  }, 0));
+}
+
+/**
  *
  * @param {value} videoParameter - parameter for the function;
  * @returns - creates div with all the content from the array;
@@ -67,28 +135,6 @@ function createVideoElement(videoParameter) {
 }
 
 /**
- * Sort videos by title name;
- * Apply the div creation function for each video in the array;
- */
-function renderVideoList() {
-  const thisPlaylist = document.getElementById("playlist");
-  thisPlaylist.innerHTML = "";
-
-  quirkyVideoDatabaseObject.videos.sort((itemA, itemB) => {
-    if (itemA.title > itemB.title) {
-      return 1;
-    }
-    else if (itemB.title > itemA.title) {
-      return -1;
-    }
-    return 0;
-  });
-
-  quirkyVideoDatabaseObject.videos.forEach(videoElement => thisPlaylist.appendChild(createVideoElement(videoElement)));
-  totalAirtime();
-}
-
-/**
  *
  * @param {number} seconds -  total number of seconds;
  * @returns - time with hours:minutes:seconds;
@@ -108,38 +154,4 @@ function toTime (seconds) {
   const date = new Date(null);
   date.setSeconds(seconds);
   return date.toISOString().substr(14, 5);
-}
-
-/**
- * Calculates total time of all videos duration;
- */
-function totalAirtime() {
-  const newAirtime = document.getElementById("airtime");
-  newAirtime.innerHTML = toTimeForAirtime(quirkyVideoDatabaseObject.videos.reduce((previousContent, currentContent) => previousContent + currentContent.duration, 0));
-}
-
-/**
- * Creates new information about the video and pushes to the array;
- */
-function addVideo() {
-  const thisVideo = document.getElementById("video-id");
-  const thisArtist = document.getElementById("artist");
-  const thisTitle = document.getElementById("title");
-  const thisDuration = document.getElementById("duration");
-
-  let theMetrics = true;
-  theMetrics = theMetrics && thisVideo.value != "" && thisVideo.value.length == 11;
-  theMetrics = theMetrics && thisArtist.value != "" && thisArtist.value.length > 2;
-  theMetrics = theMetrics && thisTitle.value != "" && thisTitle.value.length > 2;
-  theMetrics = theMetrics && thisDuration.value != "" && !isNaN(thisDuration.value);
-
-  if(theMetrics) {
-    quirkyVideoDatabaseObject.videos.push({
-      'videoId': thisVideo.value,
-      'artist': thisArtist.value,
-      'title': thisTitle.value,
-      'duration': thisDuration.value
-    });
-    renderVideoList();
-  }
 }
